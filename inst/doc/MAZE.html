@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta name="author" content="Meilin Jiang" />
+<meta name="author" content="Zhigang Li" />
+
+<meta name="date" content="2023-02-10" />
+
+<title>MAZE: Mediation Analysis for ZEro-inflated mediators</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">MAZE: Mediation Analysis for ZEro-inflated
+mediators</h1>
+<h4 class="author">Meilin Jiang<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a></h4>
+<h4 class="author">Zhigang Li<a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a></h4>
+<h4 class="date">February 10, 2023</h4>
+
+
+
+<div id="introduction" class="section level2">
+<h2>1. Introduction</h2>
+<p>The causal mediation analysis is a statistical technique to
+investigate and identify relationships in a causal mechanism involving
+one or more intermediate variables (i.e., mediators) between an
+independent variable and an outcome. In addition to a better
+understanding of the causal pathways in proposed theoretical mechanisms,
+mediation analyses can help to confirm and refine treatments when it is
+not possible or ethical to intervene the independent variable.</p>
+<p>However, challenges arise in mediation analyses in datasets with an
+excessive number of zero data point for mediators, especially in count
+data or non-negative measurements. The standard mediation analysis
+approaches may not be valid due to the violation of distributional
+assumptions. Moreover, the excessive zero mediator values could contain
+both true and false zeros. A true zero means that the measurement is
+truly zero, while a false zero means the measurement is positive but
+might be too small to be detected given the accuracy of devices used.
+Therefore, there is an unmet need for mediation analysis approaches to
+account for the zero-inflated structures of these mediators.</p>
+<p>To address the difficulties, we proposed a novel mediation analysis
+approach to estimate and test direct and indirect effects to handle
+zero-inflated mediators that are non-negative. The zero-inflated
+log-normal (ZILoN), zero-inflated negative binomial (ZINB), and
+zero-inflated Poisson (ZIP) mediators were considered as the possible
+options of distributions for these mediators.</p>
+<p>The R package <code>MAZE</code> implements the proposed causal
+mediation analysis approach for zero-inflated mediators to estimate and
+test natural indirect effect (NIE), natural direct effect (NDE), and
+controlled direct effect (CDE). Given the zero-inflated nature, the
+mediation effect (i.e., NIE) can be decomposed in to two components
+NIE<span class="math inline">\(_1\)</span> and NIE<span class="math inline">\(_2\)</span>.</p>
+</div>
+<div id="model" class="section level2">
+<h2>2. Model</h2>
+<p>For simplicity, the subject index is suppressed, and confounders are
+not included in the equations, but they have been incorporated into
+<code>MAZE</code>.</p>
+<p>For an independent variable <span class="math inline">\(X\)</span>, a
+zero-inflated mediator <span class="math inline">\(M\)</span> and a
+continuous outcome variable <span class="math inline">\(Y\)</span>, the
+following regression equation is used to model the association between
+<span class="math inline">\(Y\)</span> and <span class="math inline">\((X,M)\)</span>: <span class="math display">\[\begin{align}
+Y_{xm1_{(m&gt;0)}}=\beta_0+\beta_1m+\beta_2
+1_{(m&gt;0)}+\beta_3x+\beta_4x1_{(m&gt;0)}+\beta_5xm+\epsilon,
+\label{ymodel}
+\end{align}\]</span> where <span class="math inline">\(Y_{xm1_{(m&gt;0)}}\)</span> is the potential
+outcome of <span class="math inline">\(Y\)</span> when <span class="math inline">\((X, M, 1_{(M&gt;0)})\)</span> take the value of
+<span class="math inline">\((x,m,1_{(m&gt;0)})\)</span>, <span class="math inline">\(1_{(\cdot)}\)</span> is an indicator function.
+Equation (<span class="math inline">\(\ref{ymodel}\)</span>) is an
+regression model where <span class="math inline">\(\beta_0,\beta_1,\beta_2,\beta_3,\beta_4,\beta_5\)</span>
+are regression coefficients and <span class="math inline">\(\epsilon\)</span> is the random error following
+the normal distribution <span class="math inline">\(N(0,\delta^2)\)</span>. Notice that interactions
+between <span class="math inline">\(X\)</span> and the two mediators
+<span class="math inline">\(M\)</span> and <span class="math inline">\(1_{(M&gt;0)}\)</span> can be accommodated by the
+product terms <span class="math inline">\(\beta_4X1_{(M&gt;0)}\)</span>
+and <span class="math inline">\(\beta_5XM\)</span> in the model, which
+is an advantage of potential-outcomes mediation analysis approaches.
+Users can specify whether to include either one, both, or none of the
+two possible interactions using the argument <code>XMint</code>.</p>
+<div id="zero-inflated-mediators" class="section level3">
+<h3>2.1 Zero-inflated mediators</h3>
+<div id="zero-inflated-log-normal-zilon-mediators" class="section level4">
+<h4>2.1.1 Zero-inflated log-normal (ZILoN) mediators</h4>
+<p>For a ZILoN mediator, its two-part density function can be rewritten
+as: <span class="math display">\[\begin{align}
+&amp;  f(m;\theta)=\begin{cases}
+    \Delta, &amp; m=0\\
+    (1-\Delta)\phi(m;\mu,\sigma), &amp;m&gt;0
+  \end{cases}, \label{zilon}
+\end{align}\]</span> where <span class="math inline">\(\phi(\cdot)\)</span> is the density function of
+the log-normal distribution indexed by the parameters <span class="math inline">\(\mu\)</span> and <span class="math inline">\(\sigma\)</span> which are the expected value and
+standard deviation, respectively, of the random variable after
+natural-log transformation.</p>
+<p>The ZILoN mediator <span class="math inline">\(M\)</span> depends on
+<span class="math inline">\(X\)</span> through the following equations:
+<span class="math display">\[\begin{align}
+&amp;\mu=\alpha_{0}+\alpha_{1}X, \label{transzilon1}\\
+&amp;\log{\bigg(\frac{\Delta}{1-\Delta}\bigg)}=\gamma_0+\gamma_1X.  \label{transzilon2}
+\end{align}\]</span> Equations (<span class="math inline">\(\ref{ymodel}\)</span>), (<span class="math inline">\(\ref{transzilon1}\)</span>) and (<span class="math inline">\(\ref{transzilon2}\)</span>) together form the full
+mediation model for a ZILoN mediator and a continuous outcome.</p>
+</div>
+<div id="zero-inflated-negative-binomial-zinb-mediators" class="section level4">
+<h4>2.1.2 Zero-inflated negative binomial (ZINB) mediators</h4>
+<p>The two-part density function for a ZINB mediator <span class="math inline">\(M\)</span> is given by: <span class="math display">\[\begin{align}
+&amp;  f(m;\theta)=\begin{cases}
+    \Delta=\Delta^*+(1-\Delta^*)(\frac{r}{r+\mu})^r, &amp; m=0\\\\
+    (1-\Delta)
+\frac{\Gamma(r+m)}{\Gamma(r)m!}\frac{(\frac{\mu}{r+\mu})^m}{(\frac{r}{r+\mu})^{-r}-1},
+&amp; m=1,2,\dots
+  \end{cases}, \label{zinb}
+\end{align}\]</span> where the parameter vector <span class="math inline">\((\mu,r)^T\)</span> controls the number of zeros
+generated from the NB distribution, <span class="math inline">\(0&lt;\Delta^*&lt;1\)</span> is the parameter
+controlling the number of excessive zeros (i.e., not generated from the
+NB distribution), <span class="math inline">\(r\)</span> is the
+dispersion parameter, and <span class="math inline">\(\mu\)</span> is
+the expectation of the negative binomial distribution. The ZINB mediator
+<span class="math inline">\(M\)</span> depends on <span class="math inline">\(X\)</span> through the following equations: <span class="math display">\[\begin{align}
+&amp;\log(\mu)=\alpha_{0}+\alpha_{1}X, \label{transzinb1}\\
+&amp;\log{\bigg(\frac{\Delta^*}{1-\Delta^*}\bigg)}=\gamma_0+\gamma_1X.  \label{transzinb2}
+\end{align}\]</span> Equations (<span class="math inline">\(\ref{ymodel}\)</span>), (<span class="math inline">\(\ref{transzinb1}\)</span>) and (<span class="math inline">\(\ref{transzinb2}\)</span>) together form the full
+mediation model for a ZINB mediator and a continuous outcome.</p>
+</div>
+<div id="zero-inflated-poisson-zip-mediators" class="section level4">
+<h4>2.1.3 Zero-inflated Poisson (ZIP) mediators</h4>
+<p>The two-part density function for a ZIP mediator can be rewritten as:
+<span class="math display">\[\begin{align}
+&amp;  f(m;\theta)=\begin{cases}
+    \Delta=\Delta^*+(1-\Delta^*)\exp{(-\lambda)}, &amp; m=0\\
+    (1-\Delta)\frac{\lambda^m}{m! (\exp{(\lambda)}-1)}, &amp;
+m=1,2,\dots
+  \end{cases}, \label{zip}
+\end{align}\]</span> where <span class="math inline">\(\lambda&gt;0\)</span> is the mean of the Poisson
+distribution. <span class="math inline">\(\lambda\)</span> controls the
+number of zeros generated by the data generating process underlying the
+Poisson distribution, while <span class="math inline">\(0&lt;\Delta^*&lt;1\)</span> controls the number of
+excessive zeros in addition to zeros from the Poisson distribution. The
+ZIP mediator <span class="math inline">\(M\)</span> depends on <span class="math inline">\(X\)</span> through the following equations: <span class="math display">\[\begin{align}
+&amp;\log{(\lambda)}=\alpha_0+\alpha_1X , \label{transzip1}\\
+&amp;\log{\bigg(\frac{\Delta^*}{1-\Delta^*}\bigg)}=\gamma_0+\gamma_1X.
+\label{transzip2}
+\end{align}\]</span> Equations (1), (<span class="math inline">\(\ref{transzip1}\)</span>) and (<span class="math inline">\(\ref{transzip2}\)</span>) together form the full
+mediation model for a ZIP mediator and a continuous outcome.</p>
+</div>
+</div>
+<div id="probability-mechanism-for-observing-false-zeros" class="section level3">
+<h3>2.2 Probability mechanism for observing false zeros</h3>
+<p>It is common to observe two types of zeros for <span class="math inline">\(M\)</span> in a data set with excessive zeros:
+true zeros and false zeros. We use <span class="math inline">\(M\)</span> to denote the true value of the
+mediator and use <span class="math inline">\(M^*\)</span> for the
+observed value of <span class="math inline">\(M\)</span>. When the
+observed value of the mediator is positive (i.e., <span class="math inline">\(M^*&gt;0\)</span>), we assume <span class="math inline">\(M^*=M\)</span>. However, when <span class="math inline">\(M^*=0\)</span>, we don’t know whether <span class="math inline">\(M\)</span> is truly zero or <span class="math inline">\(M\)</span> is positive but incorrectly observed as
+zero. We consider the following mechanism for observing a zero:</p>
+<p><span class="math display">\[\begin{equation}\label{zeroMecha}
+  P(M^*=0|M)=\begin{cases}
+    \exp(-\eta^2 M), &amp; M\le B\\
+    0, &amp;M&gt;B
+  \end{cases},
+\end{equation}\]</span> where the parameter <span class="math inline">\(\eta\)</span> needs to be estimated, and <span class="math inline">\(B&gt;0\)</span> is a known constant. The value of
+<span class="math inline">\(B\)</span> can be informed on the basis of
+the insights and judgements of professionals in the specific field from
+which the data arose.</p>
+</div>
+<div id="mediation-effect-and-direct-effect" class="section level3">
+<h3>2.3 Mediation effect and direct effect</h3>
+<p>The natural indirect effect (NIE), natural direct effects (NDE) and
+controlled direct effect (CDE) are derived for the proposed mediation
+model. The NIE is also called the mediation effect. The total effect of
+the independent variable <span class="math inline">\(X\)</span> is equal
+to the summation of NIE and NDE. Let <span class="math inline">\(M_x\)</span> denote the value of <span class="math inline">\(M\)</span> if <span class="math inline">\(X\)</span> is taking the value of <span class="math inline">\(x\)</span>. Let <span class="math inline">\(1_{(M_x&gt;0)}\)</span> denote the value of <span class="math inline">\(1_{(M&gt;0)}\)</span> if <span class="math inline">\(X\)</span> takes the value of <span class="math inline">\(x\)</span>. The average NIE, NDE and CDE if <span class="math inline">\(X\)</span> changes from <span class="math inline">\(x_1\)</span> to <span class="math inline">\(x_2\)</span> are given by: <span class="math display">\[\begin{align}
+&amp;\text{NIE}=E\big(Y_{x_2M_{x_2}1_{(M_{x_2}&gt;0)}}-Y_{x_2M_{x_1}1_{(M_{x_1}&gt;0)}}\big),
+\label{defNIE}\\
+&amp;\text{NDE}=E\big(Y_{x_2 M_{x_1}1_{(M_{x_1}&gt;0)}}-Y_{x_1
+M_{x_1}1_{(M_{x_1}&gt;0)}}\big), \label{defNDE}\\
+&amp;\text{CDE}=E\big(Y_{x_2 m1_{(m&gt;0)}}-Y_{x_1
+m1_{(m&gt;0)}}\big),\hspace{0.1cm}\text{for a fixed (i.e., controlled)
+value of}\hspace{0.1cm} M, \label{defCDE}
+\end{align}\]</span></p>
+<p>Based on the sequential order of the two mediators <span class="math inline">\(M\)</span> and <span class="math inline">\(1_{(M&gt;0)}\)</span>, NIE can be further
+decomposed: <span class="math display">\[\begin{align}
+\text{NIE}&amp;=E\big(Y_{x_2M_{x_2}1_{(M_{x_2}&gt;0)}}-Y_{x_2M_{x_1}1_{(M_{x_1}&gt;0)}}\big)\nonumber\\
+&amp;=E\big(Y_{x_2M_{x_2}1_{(M_{x_2}&gt;0)}} -
+Y_{x_2M_{x_1}1_{(M_{x_2}&gt;0)}}\big) +
+E\big(Y_{x_2M_{x_1}1_{(M_{x_2}&gt;0)}}  -
+Y_{x_2M_{x_1}1_{(M_{x_1}&gt;0)}}\big) \nonumber\\
+&amp;:= \text{NIE}_1+\text{NIE}_2, \label{decomposeNIE}
+\end{align}\]</span> where NIE<span class="math inline">\(_1\)</span> is
+the mediation effect through <span class="math inline">\(M\)</span>
+summing the two causal pathways <span class="math inline">\(X\rightarrow
+M\rightarrow Y\)</span> and <span class="math inline">\(X\rightarrow
+M\rightarrow 1_{(M&gt;0)}\rightarrow Y\)</span>, and <span class="math inline">\(\text{NIE}_2\)</span> is the mediation effect
+through only <span class="math inline">\(1_{(M&gt;0)}\)</span> on the
+causal pathway <span class="math inline">\(X\rightarrow
+1_{(M&gt;0)}\rightarrow Y\)</span>.</p>
+<div id="effects-for-zilon-mediators" class="section level4">
+<h4>2.3.1 Effects for ZILoN mediators</h4>
+<p><span class="math display">\[\begin{align*}
+\text{NIE}_1&amp;=(\beta_1+\beta_5x_2)\Bigg[(1-\Delta_{x_2})\exp{\Big(\mu_{x_2}+\frac{\sigma^2}{2}\Big)}-(1-\Delta_{x_1})\exp{\Big(\mu_{x_1}+\frac{\sigma^2}{2}\Big)}\Bigg],
+\\
+\text{NIE}_2&amp;=(\beta_2+\beta_4x_2)(\Delta_{x_1}-\Delta_{x_2}), \\
+\text{NDE}&amp;=(x_2-x_1)\Bigg\{\beta_3+(1-\Delta_{x_1})\Big[\beta_4+\beta_5\exp{\Big(\mu_{x_1}+\frac{\sigma^2}{2}\Big)\Big]}\Bigg\},
+\\
+\text{CDE}&amp;=(x_2-x_1)\big(\beta_3+\beta_41_{(m&gt;0)}+\beta_5m\big).
+\end{align*}\]</span></p>
+</div>
+<div id="effects-for-zinb-mediators" class="section level4">
+<h4>2.3.2 Effects for ZINB mediators</h4>
+<p><span class="math display">\[\begin{align*}
+\text{NIE}_1&amp;=(\beta_1+\beta_5x_2)
+\Bigg[(1-\Delta^*_{x_2})\mu_{x_2}-(1-\Delta^*_{x_1})\mu_{x_1}\Bigg],\\
+\text{NIE}_2&amp;=(\beta_2+\beta_4 x_2)
+\Bigg\{\big(1-\Delta^*_{x_2}\big)\Big[1-(\frac{r}{r+\mu_{x_2}})^{r}\Big]-\big(1-\Delta^*_{x_1}\big)\Big[1-(\frac{r}{r+\mu_{x_1}})^{r}\Big]\Bigg\},\\
+\text{NDE}&amp;=(x_2-x_1)\Bigg\{\beta_3+(1-\Delta^*_{x_1})\bigg[\beta_4\Big(1-(\frac{r}{r+\mu_{x_1}})^{r}\Big)+\beta_5\mu_{x_1}\bigg]\Bigg\},\\
+\text{CDE}&amp;=(x_2-x_1)\big(\beta_3+\beta_41_{(m&gt;0)}+\beta_5m\big).
+\end{align*}\]</span></p>
+</div>
+<div id="effects-for-zip-mediators" class="section level4">
+<h4>2.3.3 Effects for ZIP mediators</h4>
+<p><span class="math display">\[\begin{align*}
+\text{NIE}_1&amp;=(\beta_1+\beta_5x_2)
+\Big[(1-\Delta^*_{x_2})\lambda_{x_2}-(1-\Delta^*_{x_1})\lambda_{x_1}\Big],\\
+\text{NIE}_2&amp;=(\beta_2+\beta_4 x_2)
+\Bigg\{\big(1-\Delta^*_{x_2}\big)\Big[1-\exp{(-\lambda_{x_2})}\Big]-\big(1-\Delta^*_{x_1}\big)\Big[1-\exp{(-\lambda_{x_1})}\Big]\Bigg\},\\
+\text{NDE}&amp;=(x_2-x_1)\Bigg\{\beta_3+(1-\Delta^*_{x_1})\bigg[\beta_4\Big(1-\exp{(-\lambda_{x_1})}\Big)+\beta_5\lambda_{x_1}\bigg]\Bigg\},\\
+\text{CDE}&amp;=(x_2-x_1)\big(\beta_3+\beta_41_{(m&gt;0)}+\beta_5m\big).
+\end{align*}\]</span></p>
+</div>
+</div>
+</div>
+<div id="installing-the-r-package" class="section level2">
+<h2>3. Installing the R package</h2>
+<p>The R package <code>MAZE</code> can be installed from the Github
+webpage.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">require</span>(devtools)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>devtools<span class="sc">::</span><span class="fu">install_github</span>(<span class="st">&quot;https://github.com/meilinjiang/MAZE&quot;</span>, <span class="at">build_vignettes =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+</div>
+<div id="main-function-maze" class="section level2">
+<h2>4. Main function <code>MAZE()</code></h2>
+<p>To estimate and test NIE, NIE<span class="math inline">\(_1\)</span>,
+and NIE<span class="math inline">\(_2\)</span>, NDE, and CDE, the R
+function <code>MAZE</code> is used to implement the proposed mediation
+analysis approach for zero-inflated mediators.</p>
+<div id="input-arguments" class="section level3">
+<h3>4.1 Input arguments</h3>
+<p>The input arguments to the function are</p>
+<ul>
+<li><p><code>data</code>: a data frame containing variables X, M, Y, and
+Z (if any)</p></li>
+<li><p><code>distM</code>: an optional character value for distribution
+to be used for the mediator. Possible choices are ‘zilonm’, ‘zinbm’, or
+‘zipm’ for zero-inflated log-normal, negative binomial, or Poisson
+mediators respectively. By default, all three distributions will be
+fitted and the final mediation model is selected by AIC</p></li>
+<li><p><code>K</code>: a user supplied sequence for the number of
+component K in the zero-inflated mixture mediators. Default is K = 1 for
+zero-inflated non-mixture mediators</p></li>
+<li><p><code>selection</code>: model selection criterion to be used when
+more than one model is fitted. Possible choices are ‘AIC’ and ‘BIC’.
+Default is ‘AIC’</p></li>
+<li><p><code>X</code>: variable name of the independent
+variable</p></li>
+<li><p><code>M</code>: variable name of the mediator variable</p></li>
+<li><p><code>Y</code>: variable name of the outcome variable
+(continuous)</p></li>
+<li><p><code>Z</code>: name(s) of confounder variables</p></li>
+<li><p><code>XMint</code>: a logical vector length 2 indicating whether
+to include the interaction terms between (i) X and 1(M&gt;0) and (ii) X
+and M. Default is <code>c(TRUE, FALSE)</code></p></li>
+<li><p><code>x1</code>: the first value of independent variable of
+interest</p></li>
+<li><p><code>x2</code>: the second value of independent variable of
+interest</p></li>
+<li><p><code>zval</code>: the value of confounders to be conditional on
+in estimating effects</p></li>
+<li><p><code>mval</code>: the fixed value of mediator to be conditional
+on in estimating CDE</p></li>
+<li><p><code>B</code>: the upper bound value B to be used in the
+probability mechanism of observing false zeros</p></li>
+<li><p><code>seed</code>: an optional seed number to control randomness
+for reproducibility. The default is 1</p></li>
+<li><p><code>ncore</code>: number of cores available for parallel
+computing</p></li>
+</ul>
+</div>
+<div id="outputs" class="section level3">
+<h3>4.2 Outputs</h3>
+<p>A list object containing</p>
+<ul>
+<li><p><code>results_effects</code>: a data frame for the results of
+estimated effects</p></li>
+<li><p><code>results_parameters</code>: a data frame for the results of
+model parameters</p></li>
+<li><p><code>selected_model_name</code>: a string for the distribution
+of M and number of components K selected in the final mediation
+model</p></li>
+<li><p><code>BIC</code>: a numeric value for the BIC of the final
+mediation model</p></li>
+<li><p><code>AIC</code>: a numeric value for the AIC of the final
+mediation model</p></li>
+<li><p><code>models</code>: a list with all fitted models</p></li>
+<li><p><code>analysis2_out</code>: a list with output from analysis2()
+function (used for internal check)</p></li>
+</ul>
+</div>
+</div>
+<div id="example" class="section level2">
+<h2>5. Example</h2>
+<p>The <code>MAZE</code> package contains an example dataset
+<code>zinb10</code> that was generated using the proposed model with a
+zero-inflated negative binomial mediator (<span class="math inline">\(K=1\)</span>). It is a data frame with 100
+observations and 3 variables: a continuous independent variable
+<code>X</code>, a continuous outcome <code>Y</code>, and a count
+mediator variable <code>Mobs</code>. The mediator variable contains 10%
+zero values in which half are false zeros.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(MAZE)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Loading required package: flexmix</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Loading required package: lattice</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Loading required package: numDeriv</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Loading required package: pracma</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Attaching package: &#39;pracma&#39;</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; The following objects are masked from &#39;package:numDeriv&#39;:</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;     grad, hessian, jacobian</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="co"># load the example dataset &quot;zinb10&quot;</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(zinb10)</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="co"># call MAZE() to perform mediation analysis</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>maze_out <span class="ot">&lt;-</span> <span class="fu">MAZE</span>(<span class="at">data=</span>zinb10, </span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>                 <span class="at">distM=</span><span class="fu">c</span>(<span class="st">&#39;zilonm&#39;</span>, <span class="st">&#39;zinbm&#39;</span>, <span class="st">&#39;zipm&#39;</span>), </span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>                 <span class="at">K =</span> <span class="dv">1</span>,</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>                 <span class="at">selection =</span> <span class="st">&quot;AIC&quot;</span>,</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>                 <span class="at">X=</span><span class="st">&#39;X&#39;</span>, <span class="at">M=</span><span class="st">&#39;Mobs&#39;</span>, <span class="at">Y=</span><span class="st">&#39;Y&#39;</span>, <span class="at">Z=</span><span class="cn">NULL</span>, </span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>                 <span class="at">XMint =</span> <span class="fu">c</span>(<span class="cn">TRUE</span>, <span class="cn">FALSE</span>),</span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>                 <span class="at">x1=</span><span class="dv">0</span>, <span class="at">x2=</span><span class="dv">1</span>, <span class="at">zval =</span> <span class="cn">NULL</span>, <span class="at">mval =</span> <span class="dv">0</span>,</span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>                 <span class="at">B=</span><span class="dv">20</span>, <span class="at">seed=</span><span class="dv">1</span>)</span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a><span class="do">## results of selected mediation model</span></span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>maze_out<span class="sc">$</span>results_effects <span class="co"># indirect and direct effects</span></span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;        Estimate         SE    CI_lower  CI_upper       Pvalue</span></span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; NIE1 0.05848985 0.04004098 -0.01998904 0.1369687 1.440842e-01</span></span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; NIE2 0.03049883 0.02884347 -0.02603334 0.0870310 2.903332e-01</span></span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; NIE  0.08898868 0.05507322 -0.01895285 0.1969302 1.061322e-01</span></span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; NDE  0.78215096 0.10561449  0.57515037 0.9891515 1.303402e-13</span></span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; CDE  0.15330724 0.44685305 -0.72250865 1.0291231 7.315368e-01</span></span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a>maze_out<span class="sc">$</span>selected_disM <span class="co"># distribution of the mediator in the selected mediation model</span></span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; NULL</span></span>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a>maze_out<span class="sc">$</span>results_parameters <span class="co"># model parameters</span></span>
+<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;            Initials   Estimate          SE     CI_lower   CI_upper       Pvalue</span></span>
+<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; beta0    1.78517270  1.3032717  0.30847936   0.69866330  1.9078802 2.391251e-05</span></span>
+<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; beta1    0.12015440  0.1200885  0.04070186   0.04031429  0.1998626 3.173198e-03</span></span>
+<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; beta2    0.00000000  0.4823095  0.36486363  -0.23281005  1.1974291 1.862048e-01</span></span>
+<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; beta3    0.85104549  0.1533072  0.44685305  -0.72250865  1.0291231 7.315368e-01</span></span>
+<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; beta4    0.00000000  0.6979238  0.45876473  -0.20123859  1.5970861 1.281818e-01</span></span>
+<span id="cb2-40"><a href="#cb2-40" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; delta    0.95403971  0.9333399  0.06599795   0.80398635  1.0626935 0.000000e+00</span></span>
+<span id="cb2-41"><a href="#cb2-41" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; alpha10  1.41269766  1.3645683  0.07253324   1.22240580  1.5067309 0.000000e+00</span></span>
+<span id="cb2-42"><a href="#cb2-42" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; alpha11  0.09257633  0.1069317  0.06954884  -0.02938148  0.2432450 1.241695e-01</span></span>
+<span id="cb2-43"><a href="#cb2-43" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; r        5.68623319  6.7790122  3.36654452   0.18070618 13.3773182 4.404723e-02</span></span>
+<span id="cb2-44"><a href="#cb2-44" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; gamma0  -2.21212075 -2.8245948  0.67815014  -4.15374470 -1.4954450 3.111524e-05</span></span>
+<span id="cb2-45"><a href="#cb2-45" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; gamma1  -0.35269450 -0.3554505  0.51607592  -1.36694068  0.6560398 4.909767e-01</span></span>
+<span id="cb2-46"><a href="#cb2-46" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; eta      0.01000000  2.9869217 14.54116089 -25.51322999 31.4870733 8.372506e-01</span></span>
+<span id="cb2-47"><a href="#cb2-47" aria-hidden="true" tabindex="-1"></a>maze_out<span class="sc">$</span>BIC; maze_out<span class="sc">$</span>AIC <span class="co"># BIC and AIC of the selected mediation model</span></span>
+<span id="cb2-48"><a href="#cb2-48" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; zinbm_K1 </span></span>
+<span id="cb2-49"><a href="#cb2-49" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 781.7195</span></span>
+<span id="cb2-50"><a href="#cb2-50" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; zinbm_K1 </span></span>
+<span id="cb2-51"><a href="#cb2-51" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 750.4574</span></span></code></pre></div>
+<p>Session Info</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sessionInfo</span>()</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; R version 4.2.2 (2022-10-31)</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Platform: x86_64-apple-darwin17.0 (64-bit)</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Running under: macOS Big Sur ... 10.16</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Matrix products: default</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; BLAS:   /Library/Frameworks/R.framework/Versions/4.2/Resources/lib/libRblas.0.dylib</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; LAPACK: /Library/Frameworks/R.framework/Versions/4.2/Resources/lib/libRlapack.dylib</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; locale:</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] C/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; attached base packages:</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] stats     graphics  grDevices utils     datasets  methods   base     </span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; other attached packages:</span></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] MAZE_0.0.1          pracma_2.4.2        numDeriv_2016.8-1.1</span></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [4] flexmix_2.3-18      lattice_0.20-45    </span></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [1] Rcpp_1.0.9        bslib_0.4.2       compiler_4.2.2    jquerylib_0.1.4  </span></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [5] iterators_1.0.14  tools_4.2.2       digest_0.6.31     jsonlite_1.8.4   </span></span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [9] evaluate_0.19     lifecycle_1.0.3   rlang_1.0.6       foreach_1.5.2    </span></span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [13] cli_3.5.0         rstudioapi_0.14   yaml_2.3.6        parallel_4.2.2   </span></span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [17] xfun_0.36         fastmap_1.1.0     stringr_1.5.0     knitr_1.41       </span></span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [21] vctrs_0.5.1       sass_0.4.4        stats4_4.2.2      grid_4.2.2       </span></span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [25] nnet_7.3-18       glue_1.6.2        R6_2.5.1          rmarkdown_2.19   </span></span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [29] magrittr_2.0.3    codetools_0.2-18  htmltools_0.5.4   modeltools_0.2-23</span></span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [33] MASS_7.3-58.1     stringi_1.7.8     doParallel_1.0.17 cachem_1.0.6</span></span></code></pre></div>
+</div>
+<div class="footnotes footnotes-end-of-document">
+<hr />
+<ol>
+<li id="fn1"><p>University of Florida, <a href="mailto:meilin.jiang@ufl.edu" class="email">meilin.jiang@ufl.edu</a><a href="#fnref1" class="footnote-back">↩︎</a></p></li>
+<li id="fn2"><p>University of Florida, <a href="mailto:zhigang.li@ufl.edu" class="email">zhigang.li@ufl.edu</a><a href="#fnref2" class="footnote-back">↩︎</a></p></li>
+</ol>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

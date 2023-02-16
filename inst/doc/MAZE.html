@@ -376,7 +376,7 @@ options of distributions for these mediators.</p>
 mediation analysis approach for zero-inflated mediators to estimate and
 test natural indirect effect (NIE), natural direct effect (NDE), and
 controlled direct effect (CDE). Given the zero-inflated nature, the
-mediation effect (i.e., NIE) can be decomposed in to two components
+mediation effect (i.e., NIE) can be decomposed into two components
 NIE<span class="math inline">\(_1\)</span> and NIE<span class="math inline">\(_2\)</span>.</p>
 </div>
 <div id="model" class="section level2">
@@ -572,37 +572,44 @@ analysis approach for zero-inflated mediators.</p>
 <h3>4.1 Input arguments</h3>
 <p>The input arguments to the function are</p>
 <ul>
-<li><p><code>data</code>: a data frame containing variables X, M, Y, and
-Z (if any)</p></li>
-<li><p><code>distM</code>: an optional character value for distribution
-to be used for the mediator. Possible choices are ‘zilonm’, ‘zinbm’, or
-‘zipm’ for zero-inflated log-normal, negative binomial, or Poisson
-mediators respectively. By default, all three distributions will be
-fitted and the final mediation model is selected by AIC</p></li>
-<li><p><code>K</code>: a user supplied sequence for the number of
-component K in the zero-inflated mixture mediators. Default is K = 1 for
-zero-inflated non-mixture mediators</p></li>
-<li><p><code>selection</code>: model selection criterion to be used when
-more than one model is fitted. Possible choices are ‘AIC’ and ‘BIC’.
-Default is ‘AIC’</p></li>
-<li><p><code>X</code>: variable name of the independent
-variable</p></li>
-<li><p><code>M</code>: variable name of the mediator variable</p></li>
-<li><p><code>Y</code>: variable name of the outcome variable
-(continuous)</p></li>
-<li><p><code>Z</code>: name(s) of confounder variables</p></li>
-<li><p><code>XMint</code>: a logical vector length 2 indicating whether
-to include the interaction terms between (i) X and 1(M&gt;0) and (ii) X
-and M. Default is <code>c(TRUE, FALSE)</code></p></li>
+<li><p><code>data</code>: a data frame containing variables: an
+independent variable , a mediator , an outcome , and confounder
+variables (if any). See example dataset:
+<code>data(zinb10)</code></p></li>
+<li><p><code>distM</code>: a vector with choices of the distribution of
+mediator to try with. One or more of ‘<code>zilonm</code>’,
+‘<code>zinbm</code>’, and ‘<code>zipm</code>’ for zero-inflated
+log-normal, negative binomial, and Poisson mediators respectively.
+Default is <code>c(&#39;zilonm&#39;, &#39;zinbm&#39;, &#39;zipm&#39;)</code> where all three
+distributions are fitted and the final mediation model is selected by
+model selection criterion <code>selection</code></p></li>
+<li><p><code>K</code>: a vector with choices of the number of component
+in the zero-inflated mixture mediators to try with. Default is for
+zero-inflated (non-mixture) mediators</p></li>
+<li><p><code>selection</code>: model selection criterion when more than
+one model (combination of different values in <code>distM</code> and
+<code>K</code>) is fitted. Either ‘<code>AIC</code>’ or
+‘<code>BIC</code>’. Default is ‘<code>AIC</code>’</p></li>
+<li><p><code>X</code>: name of the independent variable. Can be
+continuous or discrete</p></li>
+<li><p><code>M</code>: name of the mediator variable. Non-negative
+values</p></li>
+<li><p><code>Y</code>: name of the outcome variable. Continuous
+values</p></li>
+<li><p><code>Z</code>: name(s) of confounder variables (if any)</p></li>
+<li><p><code>XMint</code>: a logical vector of length 2 indicating
+whether to include the two exposure-mediator interaction terms between
+(i) and and (ii) and . Default is <code>c(TRUE, FALSE)</code>, which
+only includes the first</p></li>
 <li><p><code>x1</code>: the first value of independent variable of
 interest</p></li>
 <li><p><code>x2</code>: the second value of independent variable of
 interest</p></li>
 <li><p><code>zval</code>: the value of confounders to be conditional on
-in estimating effects</p></li>
+when estimating effects</p></li>
 <li><p><code>mval</code>: the fixed value of mediator to be conditional
-on in estimating CDE</p></li>
-<li><p><code>B</code>: the upper bound value B to be used in the
+on when estimating CDE</p></li>
+<li><p><code>B</code>: the upper bound value to be used in the
 probability mechanism of observing false zeros</p></li>
 <li><p><code>seed</code>: an optional seed number to control randomness
 for reproducibility. The default is 1</p></li>
@@ -615,11 +622,11 @@ computing</p></li>
 <p>A list object containing</p>
 <ul>
 <li><p><code>results_effects</code>: a data frame for the results of
-estimated effects</p></li>
+estimated effects (NIE1, NIE2, NIE, NDE, and CDE)</p></li>
 <li><p><code>results_parameters</code>: a data frame for the results of
 model parameters</p></li>
 <li><p><code>selected_model_name</code>: a string for the distribution
-of M and number of components K selected in the final mediation
+of and number of components selected in the final mediation
 model</p></li>
 <li><p><code>BIC</code>: a numeric value for the BIC of the final
 mediation model</p></li>
@@ -653,44 +660,42 @@ zero values in which half are false zeros.</p>
 <span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="co"># load the example dataset &quot;zinb10&quot;</span></span>
 <span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(zinb10)</span>
 <span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="co"># call MAZE() to perform mediation analysis</span></span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>maze_out <span class="ot">&lt;-</span> <span class="fu">MAZE</span>(<span class="at">data=</span>zinb10, </span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>                 <span class="at">distM=</span><span class="fu">c</span>(<span class="st">&#39;zilonm&#39;</span>, <span class="st">&#39;zinbm&#39;</span>, <span class="st">&#39;zipm&#39;</span>), </span>
-<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>                 <span class="at">K =</span> <span class="dv">1</span>,</span>
-<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>                 <span class="at">selection =</span> <span class="st">&quot;AIC&quot;</span>,</span>
-<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>                 <span class="at">X=</span><span class="st">&#39;X&#39;</span>, <span class="at">M=</span><span class="st">&#39;Mobs&#39;</span>, <span class="at">Y=</span><span class="st">&#39;Y&#39;</span>, <span class="at">Z=</span><span class="cn">NULL</span>, </span>
-<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>                 <span class="at">XMint =</span> <span class="fu">c</span>(<span class="cn">TRUE</span>, <span class="cn">FALSE</span>),</span>
-<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>                 <span class="at">x1=</span><span class="dv">0</span>, <span class="at">x2=</span><span class="dv">1</span>, <span class="at">zval =</span> <span class="cn">NULL</span>, <span class="at">mval =</span> <span class="dv">0</span>,</span>
-<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>                 <span class="at">B=</span><span class="dv">20</span>, <span class="at">seed=</span><span class="dv">1</span>)</span>
-<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a><span class="do">## results of selected mediation model</span></span>
-<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>maze_out<span class="sc">$</span>results_effects <span class="co"># indirect and direct effects</span></span>
-<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;        Estimate         SE    CI_lower  CI_upper       Pvalue</span></span>
-<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; NIE1 0.05848985 0.04004098 -0.01998904 0.1369687 1.440842e-01</span></span>
-<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; NIE2 0.03049883 0.02884347 -0.02603334 0.0870310 2.903332e-01</span></span>
-<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; NIE  0.08898868 0.05507322 -0.01895285 0.1969302 1.061322e-01</span></span>
-<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; NDE  0.78215096 0.10561449  0.57515037 0.9891515 1.303402e-13</span></span>
-<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; CDE  0.15330724 0.44685305 -0.72250865 1.0291231 7.315368e-01</span></span>
-<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a>maze_out<span class="sc">$</span>selected_disM <span class="co"># distribution of the mediator in the selected mediation model</span></span>
-<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; NULL</span></span>
-<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a>maze_out<span class="sc">$</span>results_parameters <span class="co"># model parameters</span></span>
-<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;            Initials   Estimate          SE     CI_lower   CI_upper       Pvalue</span></span>
-<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; beta0    1.78517270  1.3032717  0.30847936   0.69866330  1.9078802 2.391251e-05</span></span>
-<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; beta1    0.12015440  0.1200885  0.04070186   0.04031429  0.1998626 3.173198e-03</span></span>
-<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; beta2    0.00000000  0.4823095  0.36486363  -0.23281005  1.1974291 1.862048e-01</span></span>
-<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; beta3    0.85104549  0.1533072  0.44685305  -0.72250865  1.0291231 7.315368e-01</span></span>
-<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; beta4    0.00000000  0.6979238  0.45876473  -0.20123859  1.5970861 1.281818e-01</span></span>
-<span id="cb2-40"><a href="#cb2-40" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; delta    0.95403971  0.9333399  0.06599795   0.80398635  1.0626935 0.000000e+00</span></span>
-<span id="cb2-41"><a href="#cb2-41" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; alpha10  1.41269766  1.3645683  0.07253324   1.22240580  1.5067309 0.000000e+00</span></span>
-<span id="cb2-42"><a href="#cb2-42" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; alpha11  0.09257633  0.1069317  0.06954884  -0.02938148  0.2432450 1.241695e-01</span></span>
-<span id="cb2-43"><a href="#cb2-43" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; r        5.68623319  6.7790122  3.36654452   0.18070618 13.3773182 4.404723e-02</span></span>
-<span id="cb2-44"><a href="#cb2-44" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; gamma0  -2.21212075 -2.8245948  0.67815014  -4.15374470 -1.4954450 3.111524e-05</span></span>
-<span id="cb2-45"><a href="#cb2-45" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; gamma1  -0.35269450 -0.3554505  0.51607592  -1.36694068  0.6560398 4.909767e-01</span></span>
-<span id="cb2-46"><a href="#cb2-46" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; eta      0.01000000  2.9869217 14.54116089 -25.51322999 31.4870733 8.372506e-01</span></span>
-<span id="cb2-47"><a href="#cb2-47" aria-hidden="true" tabindex="-1"></a>maze_out<span class="sc">$</span>BIC; maze_out<span class="sc">$</span>AIC <span class="co"># BIC and AIC of the selected mediation model</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>maze_out <span class="ot">&lt;-</span> <span class="fu">MAZE</span>(<span class="at">data =</span> zinb10,</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>                 <span class="at">distM =</span> <span class="fu">c</span>(<span class="st">&#39;zilonm&#39;</span>, <span class="st">&#39;zinbm&#39;</span>, <span class="st">&#39;zipm&#39;</span>),  <span class="at">K =</span> <span class="dv">1</span>,</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>                 <span class="at">selection =</span> <span class="st">&#39;AIC&#39;</span>,</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>                 <span class="at">X =</span> <span class="st">&#39;X&#39;</span>, <span class="at">M =</span> <span class="st">&#39;Mobs&#39;</span>, <span class="at">Y =</span> <span class="st">&#39;Y&#39;</span>, <span class="at">Z =</span> <span class="cn">NULL</span>,</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>                 <span class="at">XMint =</span> <span class="fu">c</span>(<span class="cn">TRUE</span>, <span class="cn">FALSE</span>),</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>                 <span class="at">x1 =</span> <span class="dv">0</span>, <span class="at">x2 =</span> <span class="dv">1</span>, <span class="at">zval =</span> <span class="cn">NULL</span>, <span class="at">mval =</span> <span class="dv">0</span>,</span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>                 <span class="at">B =</span> <span class="dv">20</span>, <span class="at">seed =</span> <span class="dv">1</span>)</span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a><span class="do">## results of selected mediation model</span></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>maze_out<span class="sc">$</span>results_effects <span class="co"># indirect and direct effects</span></span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;        Estimate         SE    CI_lower  CI_upper       Pvalue</span></span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; NIE1 0.05848985 0.04004098 -0.01998904 0.1369687 1.440842e-01</span></span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; NIE2 0.03049883 0.02884347 -0.02603334 0.0870310 2.903332e-01</span></span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; NIE  0.08898868 0.05507322 -0.01895285 0.1969302 1.061322e-01</span></span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; NDE  0.78215096 0.10561449  0.57515037 0.9891515 1.303402e-13</span></span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; CDE  0.15330724 0.44685305 -0.72250865 1.0291231 7.315368e-01</span></span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a>maze_out<span class="sc">$</span>selected_model_name <span class="co"># distribution of the mediator and number of components K in the selected mediation model</span></span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] &quot;zinbm_K1&quot;</span></span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a>maze_out<span class="sc">$</span>results_parameters <span class="co"># model parameters</span></span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;            Initials   Estimate          SE     CI_lower   CI_upper       Pvalue</span></span>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; beta0    1.78517270  1.3032717  0.30847936   0.69866330  1.9078802 2.391251e-05</span></span>
+<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; beta1    0.12015440  0.1200885  0.04070186   0.04031429  0.1998626 3.173198e-03</span></span>
+<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; beta2    0.00000000  0.4823095  0.36486363  -0.23281005  1.1974291 1.862048e-01</span></span>
+<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; beta3    0.85104549  0.1533072  0.44685305  -0.72250865  1.0291231 7.315368e-01</span></span>
+<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; beta4    0.00000000  0.6979238  0.45876473  -0.20123859  1.5970861 1.281818e-01</span></span>
+<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; delta    0.95403971  0.9333399  0.06599795   0.80398635  1.0626935 0.000000e+00</span></span>
+<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; alpha10  1.41269766  1.3645683  0.07253324   1.22240580  1.5067309 0.000000e+00</span></span>
+<span id="cb2-40"><a href="#cb2-40" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; alpha11  0.09257633  0.1069317  0.06954884  -0.02938148  0.2432450 1.241695e-01</span></span>
+<span id="cb2-41"><a href="#cb2-41" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; r        5.68623319  6.7790122  3.36654452   0.18070618 13.3773182 4.404723e-02</span></span>
+<span id="cb2-42"><a href="#cb2-42" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; gamma0  -2.21212075 -2.8245948  0.67815014  -4.15374470 -1.4954450 3.111524e-05</span></span>
+<span id="cb2-43"><a href="#cb2-43" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; gamma1  -0.35269450 -0.3554505  0.51607592  -1.36694068  0.6560398 4.909767e-01</span></span>
+<span id="cb2-44"><a href="#cb2-44" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; eta      0.01000000  2.9869217 14.54116089 -25.51322999 31.4870733 8.372506e-01</span></span>
+<span id="cb2-45"><a href="#cb2-45" aria-hidden="true" tabindex="-1"></a>maze_out<span class="sc">$</span>BIC; maze_out<span class="sc">$</span>AIC <span class="co"># BIC and AIC of the selected mediation model</span></span>
+<span id="cb2-46"><a href="#cb2-46" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; zinbm_K1 </span></span>
+<span id="cb2-47"><a href="#cb2-47" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 781.7195</span></span>
 <span id="cb2-48"><a href="#cb2-48" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; zinbm_K1 </span></span>
-<span id="cb2-49"><a href="#cb2-49" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 781.7195</span></span>
-<span id="cb2-50"><a href="#cb2-50" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; zinbm_K1 </span></span>
-<span id="cb2-51"><a href="#cb2-51" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 750.4574</span></span></code></pre></div>
+<span id="cb2-49"><a href="#cb2-49" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 750.4574</span></span></code></pre></div>
 <p>Session Info</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sessionInfo</span>()</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; R version 4.2.2 (2022-10-31)</span></span>
@@ -708,7 +713,7 @@ zero values in which half are false zeros.</p>
 <span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] stats     graphics  grDevices utils     datasets  methods   base     </span></span>
 <span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
 <span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; other attached packages:</span></span>
-<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] MAZE_0.0.1          pracma_2.4.2        numDeriv_2016.8-1.1</span></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] MAZE_0.0.2          pracma_2.4.2        numDeriv_2016.8-1.1</span></span>
 <span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [4] flexmix_2.3-18      lattice_0.20-45    </span></span>
 <span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
 <span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>

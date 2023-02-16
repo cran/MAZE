@@ -1,6 +1,6 @@
 Package: MAZE
 Title: Mediation Analysis for Zero-Inflated Mediators
-Version: 0.0.1
+Version: 0.0.2
 Authors@R: c(
     person(given = "Meilin",
            family = "Jiang",
@@ -24,9 +24,9 @@ VignetteBuilder: knitr
 LinkingTo: Rcpp
 Imports: Rcpp, stats, foreach, doParallel, MASS
 NeedsCompilation: yes
-Packaged: 2023-02-11 13:44:38 UTC; meilinjiang
+Packaged: 2023-02-14 18:48:37 UTC; meilinjiang
 Author: Meilin Jiang [aut, cre],
   Zhigang Li [aut]
 Maintainer: Meilin Jiang <meilin.jiang@ufl.edu>
 Repository: CRAN
-Date/Publication: 2023-02-13 09:20:22 UTC
+Date/Publication: 2023-02-16 08:20:10 UTC
